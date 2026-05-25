@@ -1,23 +1,23 @@
-# Use the .NET SDK image
+# Use the .NET 8 SDK to build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy everything and restore dependencies
+# Copy project file and restore
 COPY *.csproj ./
 RUN dotnet restore
 
-# Copy the rest of the code and build
+# Copy rest of code and publish
 COPY . ./
 RUN dotnet publish -c Release -o /app/publish
 
-# Use the runtime image to run the app
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+# Use the .NET 8 Runtime to run (Notice it says aspnet:8.0)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish ./
 
-# Set the port for Render
+# Set the port Render requires
 ENV PORT=8080
 ENV ASPNETCORE_URLS=http://+:${PORT}
 
-# Start the app (CHANGE 'YourProjectName' to the name of your .csproj file without the .csproj extension!)
+# Run the app (Make sure this matches your file name!)
 ENTRYPOINT ["dotnet", "samstore-api.dll"]
